@@ -44,13 +44,14 @@ dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.5 * NSEC_PER_SEC)), 
     - 内部会提供一些属性来存放数据
     - 字典转模型的过程最好封装在模型内部
     - 模型应该提供一个可以传入字典参数的构造方法
-    ~~~
-      - (instancetype)initWithDict:(NSDictionary *)dict;
+   ```objc
+     - (instancetype)initWithDict:(NSDictionary *)dict;
       +(instancetype)xxxWithDict:(NSDictionary *)dict;
-     ~~~
+    ~~~
 
 
 ## 一个控件看不见有哪些可能？
+
 - 宽度或者高度其实为0
 - 位置不对（比如是个负数或者超大的数，已经超出屏幕）
 - hidden == YES
@@ -58,9 +59,17 @@ dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.5 * NSEC_PER_SEC)), 
 - 没有设置背景色、没有设置内容
 - 可能是文字颜色和背景色一样
 ## Instancetype
+
 - instancetype在类型表示上，跟id一样，可以表示任何对象类型
 - instancetype只能用在返回值类型上，不能像id一样用在参数类型上
 - instancetype比id多一个好处：编译器会检测instancetype的真实类型
 
 
-
+##自定义控件
+ - 比如自定义UIview
+ - 新建一个类继承UIView
+ - 重写构造方法
+ ```objc
+  -(instancetype)init
+ ```
+ 
