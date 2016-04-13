@@ -70,6 +70,57 @@ dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.5 * NSEC_PER_SEC)), 
  - 新建一个类继承UIView
  - 重写构造方法
  ```objc
-  -(instancetype)init
+  -(instancetype)init //init方法内部会自动调用initWithFrame:方法所以调initWithFrame:
+  - (instancetype)initWithFrame:(CGRect)frame
+{
+    if (self = [super initWithFrame:frame]) {
+        self.backgroundColor = [UIColor orangeColor];
+        
+        // 添加图片
+        UIImageView *iconView = [[UIImageView alloc] init];
+        iconView.backgroundColor = [UIColor blueColor];
+        [self addSubview:iconView];
+        self.iconView = iconView;
+        
+        // 添加文字
+        UILabel *nameLabel = [[UILabel alloc] init];
+        nameLabel.font = [UIFont systemFontOfSize:11];
+        nameLabel.textAlignment = NSTextAlignmentCenter;
+        nameLabel.backgroundColor = [UIColor redColor];
+        [self addSubview:nameLabel];
+        self.nameLabel = nameLabel;
+    }
+    return self;
+}
+ ```
+ - 然后在写一个layoutSubviews
+ -  这个方法专门用来布局子控件，一般在这里设置子控件的frame
+ 当控件本身的尺寸发生改变的时候，系统会自动调用这个方法
+
+ ```objc
+- (void)layoutSubviews{
+    // 一定要调用super的layoutSubviews
+    [super layoutSubviews];
+    
+    CGFloat shopW = self.frame.size.width;
+    CGFloat shopH = self.frame.size.height;
+    self.iconView.frame = CGRectMake(0, 0, shopW, shopW);
+    self.nameLabel.frame = CGRectMake(0, shopW, shopW, shopH - shopW);
+}
+
  ```
  
+- 数据显示（重写模型的set方法）在控制器中吧模型传进来
+ 
+
+
+
+
+
+
+
+
+
+
+
+
