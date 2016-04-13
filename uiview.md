@@ -1,5 +1,3 @@
-# UIView
-
 
 ## UIView的常见属性
 - NSArray *subviews
@@ -25,3 +23,4 @@
 - (void)bringSubviewToFront:(UIView *)view;
 // 将子控件view放到数组的最前面，显示在最下面
 - (void)sendSubviewToBack:(UIView *)view;
+```
