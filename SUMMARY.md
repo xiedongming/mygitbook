@@ -2,6 +2,6 @@
 
 * [Introduction](README.md)
 * [UIView](chapter1.md)
-* [ui](UI.md)
+* [UI](UI.md)
    * [UIView](uiview.md)
 
