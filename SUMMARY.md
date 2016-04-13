@@ -3,5 +3,5 @@
 * [Introduction](README.md)
 * [UI](UI.md)
    * [UIView](uiview.md)
-   * [定时器](timer.md)
+   * [UI综合项目练习](timer.md)
 
