@@ -1,4 +1,3 @@
-# UIView
 
 ## UIView的常见属性
 - NSArray *subviews
