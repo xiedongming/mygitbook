@@ -1,4 +1,3 @@
-
 ## 九宫格计算思路
 - 利用控件的索引index计算出控件所在的行号和列号
 - 利用列号计算控件的x值 
@@ -45,9 +44,10 @@ dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.5 * NSEC_PER_SEC)), 
     - 内部会提供一些属性来存放数据
     - 字典转模型的过程最好封装在模型内部
     - 模型应该提供一个可以传入字典参数的构造方法
-    
+    ~~~
       - (instancetype)initWithDict:(NSDictionary *)dict;
       +(instancetype)xxxWithDict:(NSDictionary *)dict;
+     ~~~
 
 
 ## 一个控件看不见有哪些可能？
