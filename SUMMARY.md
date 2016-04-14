@@ -6,5 +6,4 @@
    * [UI综合项目练习](timer.md)
 * [GCD](gcd.md)
    * [NSThread](nsthread.md)
-* NSOperation
 
