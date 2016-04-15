@@ -2,6 +2,7 @@
 
 
 ## 作用
+
 - 1.程序一直活着  runloop作用
 2. 处理app中的各种事件（触摸，定时 刷新）
 3. 节省cup资源 提高程序性能  
@@ -233,6 +234,8 @@ typedef CF_OPTIONS(CFOptionFlags, CFRunLoopActivity) {
  - 
 ### GCD 定时器
 
+ - GCD的定时器不受runloop的mode影响
+
 
 ```objc
 /** 定时器(这里不用带*，因为dispatch_source_t就是个类，内部已经包含了*) */
@@ -272,6 +275,11 @@ int count = 0;
 }
 
 ```
+###关于自动释放池
 
+ - 自动释放池  runloop 睡觉的时候回释放一次（BeforeWaiting）
+   睡醒之后立刻在建一下自动释放池
+   
+   资料链接 ：http://pan.baidu.com/s/1dEOqN0t
 
 
