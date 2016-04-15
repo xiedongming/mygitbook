@@ -7,5 +7,5 @@
 * [多线程](gcd.md)
    * [NSThread](nsthread.md)
    * [NSOperation](nsoperation.md)
-   * GCD
+   * [GCD](gcd2.md)
 
