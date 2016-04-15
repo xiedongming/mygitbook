@@ -116,10 +116,162 @@ CFRunLoopGetMain(); // 获得主线程的RunLoop对象
       * CFRunLoopObserverRef是观察者，能够监听RunLoop的状态改变
 
       * 可以监听的时间点有以下几个
+![](Snip20160415_5.png)
+
+CF的内存管理 （Core Foundation）  
+1.凡是带有create， copy retain等字眼的都需要release  
+2.release函数   CFRelease(observer);   
+
+```objc
+typedef CF_OPTIONS(CFOptionFlags, CFRunLoopActivity) {
+    kCFRunLoopEntry = (1UL << 0),    //1 
+    kCFRunLoopBeforeTimers = (1UL << 1), //2
+    kCFRunLoopBeforeSources = (1UL << 2),//4     
+    kCFRunLoopBeforeWaiting = (1UL << 5),//32
+    kCFRunLoopAfterWaiting = (1UL << 6),//64
+    kCFRunLoopExit = (1UL << 7),//128
+    kCFRunLoopAllActivities = 0x0FFFFFFFU
+};
+(1UL << 0)就是2的几次方
+```
+
+
+### RunLoop应用
+
+ - NSTimer
+ - ImageView显示
+ - PerformSelector
+ - 常驻线程
+ - 自动释放池
+
+
+### RunLoop 实例应用1.
+
+```objc
+ NSTimer *timer = [NSTimer timerWithTimeInterval:2.0 target:self selector:@selector(run) userInfo:nil repeats:YES];
+    // 定时器只运行在NSDefaultRunLoopMode下，一旦RunLoop进入其他模式，这个定时器就不会工作
+    [[NSRunLoop currentRunLoop] addTimer:timer forMode:NSDefaultRunLoopMode];
+    // 定时器会跑在标记为common modes的模式下
+    // 标记为common modes的模式：UITrackingRunLoopMode和kCFRunLoopDefaultMode
+    [[NSRunLoop currentRunLoop] addTimer:timer forMode:NSRunLoopCommonModes];
+    
+```
+- 结论1 ：NSRunLoopCommonModes模式下包括UITrackingRunLoopMode和kCFRunLoopDefaultMode
+
+- 结论2： 在视图滑动时如果还要继续做一些事情可以借鉴次操作
 
 
 
+### RunLoop 实例应用2.
 
+```objc
+- (void)timer2
+{
+    // 调用了scheduledTimer返回的定时器，已经自动被添加到当前runLoop中，而且是NSDefaultRunLoopMode
+    NSTimer *timer = [NSTimer scheduledTimerWithTimeInterval:2.0 target:self selector:@selector(run) userInfo:nil repeats:YES];
+    
+    // 修改runloop的mode模式
+    [[NSRunLoop currentRunLoop] addTimer:timer forMode:NSRunLoopCommonModes];
+}
+
+2.监听runloop的状态
+- (void)observer
+{
+    // 创建observer
+    CFRunLoopObserverRef observer = CFRunLoopObserverCreateWithHandler(CFAllocatorGetDefault(), kCFRunLoopAllActivities, YES, 0, ^(CFRunLoopObserverRef observer, CFRunLoopActivity activity) {
+        
+        NSLog(@"----监听到RunLoop状态发生改变---%zd", activity);
+    });
+
+    // 添加观察者：监听RunLoop的状态
+    CFRunLoopAddObserver(CFRunLoopGetCurrent(), observer, kCFRunLoopDefaultMode);
+    
+    // 释放Observer
+    CFRelease(observer);
+}
+
+```
+ 
+ - 总结： 可以通过 activity的数值（数值参考上文typedef CF_OPTIONS ）来进行一些其他操作，比如事件处理前要做一些事情。。。
+
+###在子线程创建runloop（永远不死）
+
+```objc
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    
+    self.thread = [[XMGThread alloc] initWithTarget:self selector:@selector(run) object:nil];
+    [self.thread start];
+}
+
+- (void)run
+{
+    NSLog(@"----------run----%@", [NSThread currentThread]);
+    
+    while (1) {
+        [[NSRunLoop currentRunLoop] run];
+    }
+    
+    NSLog(@"---------");
+}
+
+2,
+- (void)useImageView
+{
+    // 只在NSDefaultRunLoopMode模式下显示图片
+    [self.imageView performSelector:@selector(setImage:) withObject:[UIImage imageNamed:@"placeholder"] afterDelay:3.0 inModes:@[NSDefaultRunLoopMode]];
+    //可以查看runloop中是否被加入值
+ NSLog(@"%@", [NSRunLoop currentRunLoop]);
+}
+
+
+```
+ 
+ - run方法的最后一个NSLog永远不会打出，所以证明开启runloop成功
+ - 可以随时让这个线程做一些其他事情
+ - 2,中可在视图滚动时暂时不显示图片，提高流畅度
+ - 
+### GCD 定时器
+
+
+```objc
+/** 定时器(这里不用带*，因为dispatch_source_t就是个类，内部已经包含了*) */
+@property (nonatomic, strong) dispatch_source_t timer;
+int count = 0;
+- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
+{
+    // 获得队列
+//    dispatch_queue_t queue = dispatch_get_global_queue(0, 0);
+    dispatch_queue_t queue = dispatch_get_main_queue();
+    
+    // 创建一个定时器(dispatch_source_t本质还是个OC对象)
+    self.timer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, queue);
+    
+    // 设置定时器的各种属性（几时开始任务，每隔多长时间执行一次）
+    // GCD的时间参数，一般是纳秒（1秒 == 10的9次方纳秒）
+    // 何时开始执行第一个任务
+    // dispatch_time(DISPATCH_TIME_NOW, 1.0 * NSEC_PER_SEC) 比当前时间晚3秒
+    dispatch_time_t start = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC));
+    uint64_t interval = (uint64_t)(1.0 * NSEC_PER_SEC);
+    dispatch_source_set_timer(self.timer, start, interval, 0);
+    
+    // 设置回调
+    dispatch_source_set_event_handler(self.timer, ^{
+        NSLog(@"------------%@", [NSThread currentThread]);
+        count++;
+        
+        if (count == 4) {
+            // 取消定时器
+            dispatch_cancel(self.timer);
+            self.timer = nil;
+        }
+    });
+    
+    // 启动定时器
+    dispatch_resume(self.timer);
+}
+
+```
 
 
 
