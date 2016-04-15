@@ -175,8 +175,66 @@ NSBlockOperation *op = [NSBlockOperation blockOperationWithBlock:^{
     if (self.isCancelled) return;
 }
 ```
+###用NSOperation 模仿SDWebImage 缓存图片
+
+```objc
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    static NSString *ID = @"app";
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:ID];
+    
+    XMGApp *app = self.apps[indexPath.row];
+    cell.textLabel.text = app.name;
+    cell.detailTextLabel.text = app.download;
+    
+    // 先从内存缓存中取出图片
+    UIImage *image = self.images[app.icon];
+    if (image) { // 内存中有图片
+        cell.imageView.image = image;
+    } else {  // 内存中没有图片
+        // 获得Library/Caches文件夹
+        NSString *cachesPath = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) firstObject];
+        // 获得文件名
+        NSString *filename = [app.icon lastPathComponent];
+        // 计算出文件的全路径
+        NSString *file = [cachesPath stringByAppendingPathComponent:filename];
+        // 加载沙盒的文件数据
+        NSData *data = [NSData dataWithContentsOfFile:file];
+        
+        if (data) { // 直接利用沙盒中图片
+            UIImage *image = [UIImage imageWithData:data];
+            cell.imageView.image = image;
+            // 存到字典中
+            self.images[app.icon] = image;
+        } else { // 下载图片
+            [self.queue addOperationWithBlock:^{
+                // 下载图片
+                NSData *data = [NSData dataWithContentsOfURL:[NSURL URLWithString:app.icon]];
+                UIImage *image = [UIImage imageWithData:data];
+                
+                [NSThread sleepForTimeInterval:1.0];
+                
+                // 回到主线程显示图片
+                [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+                    cell.imageView.image = image;
+                }];
+                
+                // 存到字典中
+                self.images[app.icon] = image;
+                // 将图片文件数据写入沙盒中
+                [data writeToFile:file atomically:YES];
+            }];
+        }
+    }
+    
+    return cell;
+}
 
 
+```
+
+ - 项目链接：http://pan.baidu.com/s/1c1MWTl2
 
 
 
