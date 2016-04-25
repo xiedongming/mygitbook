@@ -10,5 +10,4 @@
    * [GCD](gcd2.md)
    * [RunLoop](runloop.md)
 * [Autolayout](autolayout.md)
-   * d'd'd
 
