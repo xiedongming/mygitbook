@@ -1,7 +1,6 @@
 # Summary
 
 * [Introduction](README.md)
-   * Autolayout
 * [UI](UI.md)
    * [UIView](uiview.md)
    * [UI综合项目练习](timer.md)
